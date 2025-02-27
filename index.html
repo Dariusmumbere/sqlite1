@@ -491,26 +491,41 @@ document.getElementById('addProductForm').addEventListener('submit', async (e) =
   const buyingPrice = parseFloat(e.target[2].value);
   const sellingPrice = parseFloat(e.target[3].value);
 
-  const response = await fetch(`${backendUrl}/products/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      name: productName,
-      type: productType,
-      buying_price: buyingPrice,
-      selling_price: sellingPrice,
-    }),
+  // Log the payload
+  console.log("Payload being sent:", {
+    name: productName,
+    type: productType,
+    buying_price: buyingPrice,
+    selling_price: sellingPrice,
   });
 
-  if (response.ok) {
-    alert('Product added successfully!');
-    e.target.reset();
-    closeModal('addProductModal');
-    await updateProductList();
-  } else {
-    alert('Failed to add product');
+  try {
+    const response = await fetch(`${backendUrl}/products/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: productName,
+        type: productType,
+        buying_price: buyingPrice,
+        selling_price: sellingPrice,
+      }),
+    });
+
+    if (response.ok) {
+      alert('Product added successfully!');
+      e.target.reset();
+      closeModal('addProductModal');
+      await updateProductList();
+    } else {
+      const errorData = await response.json();
+      console.error("Error response from backend:", errorData);
+      alert('Failed to add product');
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert('An error occurred while adding the product');
   }
 });
 
@@ -521,25 +536,32 @@ document.getElementById('addServiceForm').addEventListener('submit', async (e) =
   const serviceDescription = e.target[1].value;
   const servicePrice = parseFloat(e.target[2].value);
 
-  const response = await fetch(`${backendUrl}/services/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      name: serviceName,
-      description: serviceDescription,
-      price: servicePrice,
-    }),
-  });
+  try {
+    const response = await fetch(`${backendUrl}/services/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: serviceName,
+        description: serviceDescription,
+        price: servicePrice,
+      }),
+    });
 
-  if (response.ok) {
-    alert('Service added successfully!');
-    e.target.reset();
-    closeModal('addServiceModal');
-    await updateServiceList();
-  } else {
-    alert('Failed to add service');
+    if (response.ok) {
+      alert('Service added successfully!');
+      e.target.reset();
+      closeModal('addServiceModal');
+      await updateServiceList();
+    } else {
+      const errorData = await response.json();
+      console.error("Error response from backend:", errorData);
+      alert('Failed to add service');
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert('An error occurred while adding the service');
   }
 });
 
