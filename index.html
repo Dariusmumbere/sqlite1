@@ -435,140 +435,157 @@
 
   <!-- JavaScript -->
   <script>
-    const backendUrl = "https://sqlite-jwzc.onrender.com"; // Your backend URL
+const backendUrl = "https://sqlite-jwzc.onrender.com"; // Your backend URL
 
-    // Function to fetch products from the backend
-    async function fetchProducts() {
-      const response = await fetch(`${backendUrl}/products/`);
-      const data = await response.json();
-      return data.products;
-    }
+// Function to fetch products from the backend
+async function fetchProducts() {
+  const response = await fetch(`${backendUrl}/products/`);
+  const data = await response.json();
+  return data.products;
+}
 
-    // Function to fetch services from the backend
-    async function fetchServices() {
-      const response = await fetch(`${backendUrl}/services/`);
-      const data = await response.json();
-      return data.services;
-    }
+// Function to fetch services from the backend
+async function fetchServices() {
+  const response = await fetch(`${backendUrl}/services/`);
+  const data = await response.json();
+  return data.services;
+}
 
-    // Function to update the product list in the UI
-    async function updateProductList() {
-      const products = await fetchProducts();
-      const productList = document.getElementById('productList');
-      productList.innerHTML = products.map(product => `
-        <div onclick="showProductDetails(${product.id})" class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500">
-          ${product.name} (${product.type})
-        </div>
-      `).join('');
-    }
+// Function to update the product list in the UI
+async function updateProductList() {
+  const products = await fetchProducts();
+  const productList = document.getElementById('productList');
+  productList.innerHTML = products.map(product => `
+    <div onclick="showProductDetails(${product.id})" class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500">
+      ${product.name} (${product.type})
+    </div>
+  `).join('');
+}
 
-    // Function to update the service list in the UI
-    async function updateServiceList() {
-      const services = await fetchServices();
-      const serviceList = document.getElementById('serviceList');
-      const serviceTableBody = document.getElementById('serviceTableBody');
+// Function to update the service list in the UI
+async function updateServiceList() {
+  const services = await fetchServices();
+  const serviceList = document.getElementById('serviceList');
+  const serviceTableBody = document.getElementById('serviceTableBody');
 
-      // Update the service list in the Products/Services card
-      serviceList.innerHTML = services.map(service => `
-        <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">${service.name}</div>
-      `).join('');
+  // Update the service list in the Products/Services card
+  serviceList.innerHTML = services.map(service => `
+    <div class="p-2 bg-gray-200 dark:bg-gray-600 rounded dark:text-white">${service.name}</div>
+  `).join('');
 
-      // Update the service table in the Manage Services modal
-      serviceTableBody.innerHTML = services.map(service => `
-        <tr>
-          <td>${service.name}</td>
-          <td>${service.description}</td>
-          <td>${service.price.toFixed(2)}</td>
-        </tr>
-      `).join('');
-    }
+  // Update the service table in the Manage Services modal
+  serviceTableBody.innerHTML = services.map(service => `
+    <tr>
+      <td>${service.name}</td>
+      <td>${service.description}</td>
+      <td>${service.price.toFixed(2)}</td>
+    </tr>
+  `).join('');
+}
 
-    // Function to add a product
-    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productName = e.target[0].value;
-      const productType = e.target[1].value;
-      const buyingPrice = parseFloat(e.target[2].value);
-      const sellingPrice = parseFloat(e.target[3].value);
+// Function to add a product
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const productName = e.target[0].value;
+  const productType = e.target[1].value;
+  const buyingPrice = parseFloat(e.target[2].value);
+  const sellingPrice = parseFloat(e.target[3].value);
 
-      const response = await fetch(`${backendUrl}/products/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: productName,
-          type: productType,
-          buying_price: buyingPrice,
-          selling_price: sellingPrice,
-        }),
-      });
+  const response = await fetch(`${backendUrl}/products/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: productName,
+      type: productType,
+      buying_price: buyingPrice,
+      selling_price: sellingPrice,
+    }),
+  });
 
-      if (response.ok) {
-        alert('Product added successfully!');
-        e.target.reset();
-        closeModal('addProductModal');
-        await updateProductList();
-      } else {
-        alert('Failed to add product');
-      }
-    });
+  if (response.ok) {
+    alert('Product added successfully!');
+    e.target.reset();
+    closeModal('addProductModal');
+    await updateProductList();
+  } else {
+    alert('Failed to add product');
+  }
+});
 
-    // Function to add a service
-    document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const serviceName = e.target[0].value;
-      const serviceDescription = e.target[1].value;
-      const servicePrice = parseFloat(e.target[2].value);
+// Function to add a service
+document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const serviceName = e.target[0].value;
+  const serviceDescription = e.target[1].value;
+  const servicePrice = parseFloat(e.target[2].value);
 
-      const response = await fetch(`${backendUrl}/services/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: serviceName,
-          description: serviceDescription,
-          price: servicePrice,
-        }),
-      });
+  const response = await fetch(`${backendUrl}/services/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: serviceName,
+      description: serviceDescription,
+      price: servicePrice,
+    }),
+  });
 
-      if (response.ok) {
-        alert('Service added successfully!');
-        e.target.reset();
-        closeModal('addServiceModal');
-        await updateServiceList();
-      } else {
-        alert('Failed to add service');
-      }
-    });
+  if (response.ok) {
+    alert('Service added successfully!');
+    e.target.reset();
+    closeModal('addServiceModal');
+    await updateServiceList();
+  } else {
+    alert('Failed to add service');
+  }
+});
 
-    // Function to show product details
-    async function showProductDetails(productId) {
-      const response = await fetch(`${backendUrl}/products/${productId}`);
-      const product = await response.json();
+// Function to show product details
+async function showProductDetails(productId) {
+  const response = await fetch(`${backendUrl}/products/${productId}`);
+  const product = await response.json();
 
-      document.getElementById('productDetailsTitle').textContent = product.name;
-      document.getElementById('productType').textContent = product.type;
-      document.getElementById('buyingPrice').textContent = product.buying_price.toFixed(2);
-      document.getElementById('sellingPrice').textContent = product.selling_price.toFixed(2);
-      document.getElementById('markupProfit').textContent = (product.selling_price - product.buying_price).toFixed(2);
-      document.getElementById('productDetailsModal').classList.remove('hidden');
-    }
+  document.getElementById('productDetailsTitle').textContent = product.name;
+  document.getElementById('productType').textContent = product.type;
+  document.getElementById('buyingPrice').textContent = product.buying_price.toFixed(2);
+  document.getElementById('sellingPrice').textContent = product.selling_price.toFixed(2);
+  document.getElementById('markupProfit').textContent = (product.selling_price - product.buying_price).toFixed(2);
+  document.getElementById('productDetailsModal').classList.remove('hidden');
+}
 
-    // Function to close modals
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.add('hidden');
-    }
+// Function to close modals
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.add('hidden');
+}
 
-    // Initialize the UI
-    async function init() {
-      await updateProductList();
-      await updateServiceList();
-    }
+// Function to open modals
+function openAddProductModal() {
+  document.getElementById('addProductModal').classList.remove('hidden');
+}
 
-    // Run the initialization function when the page loads
-    init();
+function openStockManagementModal() {
+  document.getElementById('stockManagementModal').classList.remove('hidden');
+}
+
+function openAddServiceModal() {
+  document.getElementById('addServiceModal').classList.remove('hidden');
+}
+
+function openServiceManagementModal() {
+  document.getElementById('serviceManagementModal').classList.remove('hidden');
+}
+
+// Initialize the UI
+async function init() {
+  await updateProductList();
+  await updateServiceList();
+}
+
+// Run the initialization function when the page loads
+init();
   </script>
 </body>
 </html>
