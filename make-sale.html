@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+    .overview {
+      font-size: 34px;
+      text-align: center;
+      background-color: rgb(19, 19, 71);
+      margin-bottom: 15px;
+      color: white;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .dark .modal-content {
+      background-color: #1f2937;
+      color: white;
+    }
+    .sale-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .sale-table th, .sale-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .dark .sale-table th, .dark .sale-table td {
+      border-color: #374151;
+    }
+    .hidden {
+      display: none;
+    }
+    /* Chatbot Icon */
+    .chatbot-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+    }
+    .chatbot-icon:hover {
+      background-color: #45a049;
+    }
+    /* Chatbot Modal */
+    .chatbot-modal {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 350px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1002;
+      display: none;
+    }
+    .chatbot-modal.active {
+      display: block;
+    }
+    .chatbot-header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chatbot-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .chatbot-header button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .chatbot-body {
+      padding: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .chatbot-footer {
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      display: flex;
+    }
+    .chatbot-footer input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .chatbot-footer button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .chatbot-footer button:hover {
+      background-color: #45a049;
+    }
+    .message {
+      margin-bottom: 10px;
+    }
+    .message.user {
+      text-align: right;
+    }
+    .message.bot {
+      text-align: left;
+    }
+    .message p {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 12px;
+      max-width: 70%;
+    }
+    .message.user p {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .message.bot p {
+      background-color: #f1f1f1;
+      color: black;
+    }
+    /* Button Styling */
+    .gray-button {
+      background-color: #6b7280;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-align: center;
+      display: inline-block;
+      width: auto;
+      margin: 5px;
+      border: 1px solid black; /* Thin black border */
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Shadow */
+    }
+    .gray-button:hover {
+      background-color: #4b5563;
+    }
+    .close-button {
+      background-color: #ef4444; /* Red color for close buttons */
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-align: center;
+      display: inline-block;
+      width: auto;
+      margin: 5px;
+      border: 1px solid black; /* Thin black border */
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Shadow */
+    }
+    .close-button:hover {
+      background-color: #dc2626; /* Darker red on hover */
+    }
+    .flex-end {
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make a Sale - Ndyakurungi ITECH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow">
+    <div class="container mx-auto p-4 flex items-center justify-between">
+      <div class="flex items-center">
+        <div class="text-4xl text-blue-600 dark:text-blue-400 mr-4">
+          <img src="Itech-computers-logo1.webp" alt="Itech Computers Logo"> <!-- Replace with your logo -->
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold dark:text-white">NDYAKURUNGI ITECH COMPUTER SOLUTIONS</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Name it, we will provide & deliver it</p> <!-- Replace with your slogan -->
+        </div>
+      </div>
+      <!-- Dark/Light Mode Toggle -->
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700">
+        <i id="themeIcon" class="fas fa-moon text-gray-800 dark:text-yellow-400"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-8">
+    <!-- Make a Sale Section -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-cash-register mr-2"></i>Make a Sale</h2>
+      <!-- Buttons for Add Client and Choose Client -->
+      <div class="flex justify-between mb-4">
+        <button onclick="openChooseClientModal()" class="gray-button">
+          <i class="fas fa-users mr-2"></i>Choose Client
+        </button>
+        <button onclick="openAddClientModal()" class="gray-button">
+          <i class="fas fa-user-plus mr-2"></i>Add Client
+        </button>
+      </div>
+      <!-- Sale Table -->
+      <table class="sale-table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="saleTableBody">
+          <!-- Sale items will be dynamically added here -->
+        </tbody>
+      </table>
+      <!-- Add Item Button -->
+      <button onclick="openAddItemModal()" class="gray-button mt-4">
+        <i class="fas fa-plus mr-2"></i>Select Item
+      </button>
+      <!-- Total and Generate Receipt -->
+      <div class="flex justify-between items-center mt-4">
+        <p class="text-lg font-semibold dark:text-white">Total: <span id="saleTotal">0.00</span></p>
+        <button onclick="generateReceipt()" class="gray-button">
+          <i class="fas fa-receipt mr-2"></i>Generate Receipt
+        </button>
+      </div>
+    </div>
+
+    <!-- Sales History Section -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4 dark:text-white"><i class="fas fa-history mr-2"></i>Sales History</h2>
+      <!-- Search Sales History -->
+      <input type="text" id="searchSales" placeholder="Search sales..." class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white">
+      <!-- Sales History Table -->
+      <table class="sale-table">
+        <thead>
+          <tr>
+            <th>Invoice Number</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Total Amount</th>
+            <th>Payment Method</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="salesHistoryBody">
+          <!-- Sales history will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Client Modal -->
+  <div id="addClientModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-user-plus mr-2"></i>Add Client</h3>
+      <form id="addClientForm">
+        <input type="text" placeholder="Client Name" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Client Email" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <input type="text" placeholder="Client Phone" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Add Client</button>
+      </form>
+      <button onclick="closeModal('addClientModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
+  <!-- Choose Client Modal -->
+  <div id="chooseClientModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-users mr-2"></i>Choose Client</h3>
+      <div id="clientList" class="mb-4">
+        <!-- Clients will be dynamically added here -->
+      </div>
+      <button onclick="closeModal('chooseClientModal')" class="close-button">Close</button>
+    </div>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div id="addItemModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 class="text-lg font-semibold mb-4 dark:text-white"><i class="fas fa-plus mr-2"></i>Add Item</h3>
+      <form id="addItemForm">
+        <select id="itemSelect" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+          <option value="" disabled selected>Select Item</option>
+          <!-- Items will be dynamically added here -->
+        </select>
+        <input type="number" placeholder="Quantity" class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white" required>
+        <button type="submit" class="gray-button">Add Item</button>
+      </form>
+      <button onclick="closeModal('addItemModal')" class="close-button mt-2">Close</button>
+    </div>
+  </div>
+
+  <!-- Chatbot Icon -->
+  <button class="chatbot-icon" onclick="toggleChatbot()">
+    <i class="fas fa-comment"></i>
+  </button>
+
+  <!-- Chatbot Modal -->
+  <div id="chatbotModal" class="chatbot-modal">
+    <div class="chatbot-header">
+      <h3>Chatbot</h3>
+      <button onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chatbot-body" id="chatbotBody">
+      <div class="message bot">
+        <p>Hello! How can I assist you today?</p>
+      </div>
+    </div>
+    <div class="chatbot-footer">
+      <input type="text" id="chatbotInput" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const { jsPDF } = window.jspdf;
+    const clients = [];
+    const salesHistory = [];
+    let currentSale = [];
+    let selectedClient = null;
+
+    // Open Add Client Modal
+    function openAddClientModal() {
+      document.getElementById('addClientModal').classList.remove('hidden');
+    }
+
+    // Open Choose Client Modal
+    function openChooseClientModal() {
+      const clientList = document.getElementById('clientList');
+      clientList.innerHTML = clients.map(client => `
+        <div class="p-2 border-b dark:border-gray-600">
+          <input type="radio" name="client" value="${client.name}" onchange="selectClient('${client.name}')">
+          <span class="ml-2">${client.name}</span>
+        </div>
+      `).join('');
+      document.getElementById('chooseClientModal').classList.remove('hidden');
+    }
+
+    // Select Client
+    function selectClient(clientName) {
+      selectedClient = clientName;
+      closeModal('chooseClientModal');
+    }
+
+    // Open Add Item Modal
+    function openAddItemModal() {
+      const itemSelect = document.getElementById('itemSelect');
+      itemSelect.innerHTML = '<option value="" disabled selected>Select Item</option>' +
+        products.map(product => `<option value="${product.name}">${product.name}</option>`).join('');
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+
+    // Close Modals
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Add Client
+    document.getElementById('addClientForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const clientName = e.target[0].value;
+      const clientEmail = e.target[1].value;
+      const clientPhone = e.target[2].value;
+      clients.push({ name: clientName, email: clientEmail, phone: clientPhone });
+      alert('Client added successfully!');
+      e.target.reset();
+      closeModal('addClientModal');
+    });
+
+    // Add Item to Sale
+    document.getElementById('addItemForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const itemName = document.getElementById('itemSelect').value;
+      const quantity = parseFloat(e.target[1].value);
+      const product = products.find(p => p.name === itemName);
+      const total = product.sellingPrice * quantity;
+
+      currentSale.push({ itemName, quantity, unitPrice: product.sellingPrice, total });
+      updateSaleTable();
+      closeModal('addItemModal');
+    });
+
+    // Update Sale Table
+    function updateSaleTable() {
+      const saleTableBody = document.getElementById('saleTableBody');
+      saleTableBody.innerHTML = currentSale.map((item, index) => `
+        <tr>
+          <td>${item.itemName}</td>
+          <td>${item.quantity}</td>
+          <td>${item.unitPrice.toFixed(2)}</td>
+          <td>${item.total.toFixed(2)}</td>
+          <td><button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button></td>
+        </tr>
+      `).join('');
+
+      // Update Total
+      const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+      document.getElementById('saleTotal').textContent = total.toFixed(2);
+    }
+
+    // Remove Item from Sale
+    function removeItem(index) {
+      currentSale.splice(index, 1);
+      updateSaleTable();
+    }
+
+    // Generate Receipt
+    function generateReceipt() {
+      if (currentSale.length === 0) {
+        alert('No items in the sale!');
+        return;
+      }
+
+      const doc = new jsPDF();
+      doc.text("NDYAKURUNGI ITECH COMPUTER SOLUTIONS", 10, 10);
+      doc.text("Receipt", 10, 20);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 30);
+
+      let y = 40;
+      currentSale.forEach(item => {
+        doc.text(`${item.itemName} - ${item.quantity} x ${item.unitPrice.toFixed(2)} = ${item.total.toFixed(2)}`, 10, y);
+        y += 10;
+      });
+
+      const total = currentSale.reduce((sum, item) => sum + item.total, 0);
+      doc.text(`Total: ${total.toFixed(2)}`, 10, y + 10);
+
+      doc.save('receipt.pdf');
+      salesHistory.push({ 
+        invoiceNumber: `INV-${salesHistory.length + 1}`, 
+        date: new Date().toLocaleDateString(), 
+        client: selectedClient || 'N/A', 
+        total, 
+        paymentMethod: 'Cash', 
+        status: 'Paid' 
+      });
+      currentSale = [];
+      updateSaleTable();
+      updateSalesHistory();
+    }
+
+    // Update Sales History
+    function updateSalesHistory() {
+      const salesHistoryBody = document.getElementById('salesHistoryBody');
+      salesHistoryBody.innerHTML = salesHistory.map(sale => `
+        <tr>
+          <td>${sale.invoiceNumber}</td>
+          <td>${sale.date}</td>
+          <td>${sale.client}</td>
+          <td>${sale.total.toFixed(2)}</td>
+          <td>${sale.paymentMethod}</td>
+          <td>${sale.status}</td>
+          <td><button onclick="viewReceipt('${sale.invoiceNumber}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button></td>
+        </tr>
+      `).join('');
+    }
+
+    // Search Sales History
+    document.getElementById('searchSales').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredSales = salesHistory.filter(sale =>
+        sale.date.toLowerCase().includes(searchTerm) ||
+        (sale.client && sale.client.toLowerCase().includes(searchTerm)) ||
+        sale.invoiceNumber.toLowerCase().includes(searchTerm)
+      );
+      const salesHistoryBody = document.getElementById('salesHistoryBody');
+      salesHistoryBody.innerHTML = filteredSales.map(sale => `
+        <tr>
+          <td>${sale.invoiceNumber}</td>
+          <td>${sale.date}</td>
+          <td>${sale.client}</td>
+          <td>${sale.total.toFixed(2)}</td>
+          <td>${sale.paymentMethod}</td>
+          <td>${sale.status}</td>
+          <td><button onclick="viewReceipt('${sale.invoiceNumber}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button></td>
+        </tr>
+      `).join('');
+    });
+
+    // View Receipt (Placeholder)
+    function viewReceipt(invoiceNumber) {
+      alert(`Viewing receipt for invoice ${invoiceNumber}`);
+    }
+
+    // Chatbot Functions
+    function toggleChatbot() {
+      const chatbotModal = document.getElementById('chatbotModal');
+      chatbotModal.classList.toggle('active');
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatbotInput');
+      const message = input.value.trim();
+      if (message === '') return;
+
+      const chatbotBody = document.getElementById('chatbotBody');
+      chatbotBody.innerHTML += `
+        <div class="message user">
+          <p>${message}</p>
+        </div>
+      `;
+
+      // Simulate bot response
+      setTimeout(() => {
+        chatbotBody.innerHTML += `
+          <div class="message bot">
+            <p>I'm just a demo bot. I can't respond yet!</p>
+          </div>
+        `;
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+      }, 1000);
+
+      input.value = '';
+      chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    }
+  </script>
+</body>
+</html>
